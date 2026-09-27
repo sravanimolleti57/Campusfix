@@ -111,6 +111,7 @@ export const login = async (req, res) => {
 
     // 1. Validate inputs
     if (!email || !password) {
+      console.warn('[Login Failure]: Missing email or password in request body');
       return res.status(400).json({
         success: false,
         message: 'Please provide both email and password',
@@ -119,9 +120,11 @@ export const login = async (req, res) => {
 
     // 2. Find user by email and explicitly select password (since select: false in schema)
     const normalizedEmail = email.toLowerCase().trim();
+    console.log(`[Login Attempt]: Processing login request for ${normalizedEmail}`);
     const user = await User.findOne({ email: normalizedEmail }).select('+password');
 
     if (!user) {
+      console.warn(`[Login Failure]: Account not found for email ${normalizedEmail}`);
       return res.status(401).json({
         success: false,
         message: 'Invalid credentials: User not found',
@@ -132,6 +135,7 @@ export const login = async (req, res) => {
     const isMatch = await user.matchPassword(password);
 
     if (!isMatch) {
+      console.warn(`[Login Failure]: Password mismatch for email ${normalizedEmail}`);
       return res.status(401).json({
         success: false,
         message: 'Invalid credentials: Password incorrect',
@@ -140,6 +144,7 @@ export const login = async (req, res) => {
 
     // 4. Verify account active state
     if (!user.isActive) {
+      console.warn(`[Login Failure]: Account deactivated for email ${normalizedEmail}`);
       return res.status(403).json({
         success: false,
         message: 'Your account has been deactivated. Please contact campus administration.',
@@ -148,6 +153,7 @@ export const login = async (req, res) => {
 
     // 5. Generate JWT token
     const token = generateToken(user._id, user.role);
+    console.log(`[Login Success]: Authenticated user ${normalizedEmail} (${user.role})`);
 
     // 6. Return response with safe user object
     return res.status(200).json({
@@ -169,7 +175,7 @@ export const login = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('[Login Error]:', error);
+    console.error('[Login Server Error]:', error);
     return res.status(500).json({
       success: false,
       message: error.message || 'Internal server error during login',

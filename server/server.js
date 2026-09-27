@@ -118,7 +118,7 @@ const startServer = async () => {
     await connectDB();
     await seedInitialUsers();
 
-    app.listen(PORT, () => {
+    app.listen(PORT, '0.0.0.0', () => {
       console.log(`[CampusFix Server]: Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
     });
   } catch (error) {

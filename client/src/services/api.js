@@ -2,7 +2,19 @@ import axios from 'axios';
 
 // Normalize base API URL to work seamlessly in production (Vercel/Render) and local environments
 const getBaseURL = () => {
-  const rawUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+  const envUrl = import.meta.env.VITE_API_URL;
+  let rawUrl = envUrl;
+
+  if (!rawUrl) {
+    // If in production build or running on remote host (e.g. vercel.app), default to production Render URL
+    const isRemote = typeof window !== 'undefined' && !window.location.hostname.includes('localhost') && !window.location.hostname.includes('127.0.0.1');
+    if (import.meta.env.PROD || isRemote) {
+      rawUrl = 'https://campusfix-k3iu.onrender.com/api';
+    } else {
+      rawUrl = 'http://localhost:5001/api';
+    }
+  }
+
   const cleanUrl = rawUrl.trim().replace(/\/+$/, '');
   return cleanUrl.endsWith('/api') ? cleanUrl : `${cleanUrl}/api`;
 };
