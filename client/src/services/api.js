@@ -1,12 +1,19 @@
 import axios from 'axios';
 
+// Normalize base API URL to work seamlessly in production (Vercel/Render) and local environments
+const getBaseURL = () => {
+  const rawUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+  const cleanUrl = rawUrl.trim().replace(/\/+$/, '');
+  return cleanUrl.endsWith('/api') ? cleanUrl : `${cleanUrl}/api`;
+};
+
 // Create central Axios instance
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5001/api',
+  baseURL: getBaseURL(),
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 10000,
+  timeout: 15000,
 });
 
 // Request Interceptor: Attach JWT Bearer token if present in localStorage

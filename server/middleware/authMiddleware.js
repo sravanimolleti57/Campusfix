@@ -7,13 +7,11 @@ import User from '../models/User.js';
  */
 export const authenticateUser = async (req, res, next) => {
   let token;
+  const authHeader = req.headers.authorization || req.headers.Authorization;
 
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith('Bearer')
-  ) {
+  if (authHeader && authHeader.toLowerCase().startsWith('bearer ')) {
     try {
-      token = req.headers.authorization.split(' ')[1];
+      token = authHeader.substring(7).trim();
 
       if (!token) {
         return res.status(401).json({
