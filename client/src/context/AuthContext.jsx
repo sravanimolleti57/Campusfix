@@ -63,7 +63,16 @@ export const AuthProvider = ({ children }) => {
       }
       return { success: false, message: 'Invalid response from authentication server' };
     } catch (err) {
-      const message = err.response?.data?.message || 'Login failed. Please check your credentials.';
+      let message = err.response?.data?.message;
+      if (!message) {
+        if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
+          message = 'Server is spinning up (Render cold start). Please wait a moment and try again.';
+        } else if (err.message === 'Network Error') {
+          message = 'Network Error: Unable to connect to backend server.';
+        } else {
+          message = 'Login failed. Please check your credentials.';
+        }
+      }
       setError(message);
       return { success: false, message };
     }
